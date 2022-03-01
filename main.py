@@ -26,6 +26,18 @@ class Colors ():
     orangel = "#FE8019"
     FG = "#F8F8F2"
 
+class Line ():
+    points = []
+    dx = None
+    dy = None
+    dydx = None
+    c = None
+    def __init__(self, points, dydx, c):
+        self.points = points
+        self.dydx = dydx
+        self.c = c
+
+
 
 window_res = [1366, 768]
 
@@ -34,9 +46,9 @@ pixels = [[0 for _ in range(window_res[1])] for _ in range(window_res[0])]
 def drawGrid(SCREEN):
     # looping through grid
     for x in range(0, window_res[0] - 1):
-        for y in range(0, window_res[1] - 1):
+        for y in range(1, window_res[1]):
             # checking value of pixel
-            if pixels[x][y] == 1:
+            if pixels[x][window_res[1] - y] == 1:
                 rect = pygame.Rect(x, y, 1, 1)
                 color = pygame.Color(Colors.red)
                 pygame.draw.rect(SCREEN, color, rect)
@@ -79,11 +91,18 @@ def areaEl(theta0, theta1, points, orig):
     # all points of triangle
     triag_points = [post0[:2], post1[:2], orig]
     # nice (useless) lines
-    for p in drawLinep([triag_points[1], triag_points[0]]):
+    l = drawLinep([triag_points[1], triag_points[2]])
+    l2 = drawLinep([triag_points[1], triag_points[0]])
+    l3 = drawLinep([triag_points[0], triag_points[2]])
+    for p in l.points:
         pixels[p[0]][p[1]] = 1
-    for p in drawLinep([triag_points[2], triag_points[0]]):
+    for p in l2.points:
         pixels[p[0]][p[1]] = 1
-    for p in drawLinep([triag_points[2], triag_points[1]]):
+    for p in l3.points:
+        pixels[p[0]][p[1]] = 1
+    print("DYDX", l.dydx)
+    for p in drawLineop(triag_points[0], -1/l.dydx).points:
+        print("HERE")
         pixels[p[0]][p[1]] = 1
 
     # not implemented logic
@@ -99,7 +118,8 @@ def drawLine(interv, m, c):
     for x in range(interv[0], interv[1]):
         for y in range(window_res[1]):
             # checking if roughly y
-            if int(x * m + c) == y:
+            ty = int(x * m + c)
+            if ty == y and ty > 0 and ty < window_res[1]:
                 points.append([x, y])
     return points
 
@@ -111,16 +131,19 @@ def drawLinep(upoints):
     dx = points[1][0] - points[0][0]
     # y at x = 0
     c = points[0][1] - points[0][0] * (dy/dx)
-    #print("DP", points, dy, dx, dy/dx, c)
-    return drawLine([points[0][0], points[1][0]], dy/dx, c)
+    return Line(drawLine([points[0][0], points[1][0]], dy/dx, c), dy / dx, c)
 
+def drawLineop(point, m):
+    print(point)
+    c = point[1] - point[0] * m
+    return Line(drawLine([0, window_res[0]], m, c), m, c)
 
 if __name__ == "__main__":
-    pix_orb0 = orbit([500, 100], 100, 0.75)
+    pix_orb0 = orbit([500, 600], 100, -0.75)
     for p in pix_orb0:
         pixels[p[0]][p[1]] = 1
-    sphere([500, 100], 5)
-    areaEl(5, 100, pix_orb0, [500, 100])
+    sphere([500, 600], 5)
+    areaEl(5, 100, pix_orb0, [500, 600])
     pygame.init()
     SCREEN = pygame.display.set_mode((window_res[0], window_res[1]))
     SCREEN.fill(Colors.BG)
