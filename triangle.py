@@ -7,7 +7,8 @@ import numpy as np
 
 class Triangle():
     points = []
-    def __init__(self, points):
+    def __init__(self, points, debug):
+        self.debug = debug
         self.Bpoints = points
         self.ls = [Line(), Line(), Line()]
         self.ls[0].eqp([self.Bpoints[0], self.Bpoints[2]])
@@ -19,7 +20,8 @@ class Triangle():
         for line in self.ls:
             lengths.append(line.getLength())
         # https://www.mathopenref.com/heronsformula.html
-        print("TRI LENGTHS", lengths)
+        if self.debug:
+            print("TRI LENGTHS", lengths)
         p = sum(lengths)/2
         self.area = math.sqrt(p * (p - lengths[0]) * (p - lengths[1]) * (p - lengths[2]))
         return self.area
@@ -41,5 +43,4 @@ class Triangle():
             for y in range(int(pos[1] - rad), int(pos[1] + rad)):
                 # checking if position is in circle
                 if (x - pos[0])**2 + (y - pos[1])**2 <= rad**2:
-                    #print(x, y)
                     self.points.append([x, y])

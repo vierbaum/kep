@@ -8,19 +8,18 @@ from triangle import Triangle
 from vars import *
 
 class Orbit():
-    pos = None
-    a = None
-    e = None
-    perc = None
-    points_angles = []
-    points = []
-    planet = Planet(500, [], 10)
 
-    def __init__(self, pos, a, e, perc=0.001):
+    def __init__(self, pos, a, e, debug, visual, perc=0.001):
+        self.debug = debug
+        self.visual = visual
+        self.planet = Planet(500, [], 10)
         self.pos = pos
         self.a = a
         self.e = e
         self.perc = perc
+        self.points_angles = []
+        self.points = []
+        self.sphere(5)
 
 
     def draw(self):
@@ -35,7 +34,6 @@ class Orbit():
             for y in range(self.pos[1] - rad, self.pos[1] + rad):
                 # checking if position is in circle
                 if (x - self.pos[0])**2 + (y - self.pos[1])**2 <= rad**2:
-                    #print(x, y)
                     self.points.append([x, y])
 
 
@@ -43,31 +41,31 @@ class Orbit():
         stepsize = 0.01
         # checking if planet already has a position
         if self.planet.position == []:
-            # if not, search for point at 0 degree and assign
-            for p in range(len(self.points_angles)):
-                if self.points_angles[p][-2] == 0:
-                    self.planet.position = self.points_angles[p][2:]
+            d = (self.a * (1 - self.e**2))/(1 + self.e)
+            # converting to Cartesian
+            y = self.pos[1]
+            x = d + self.pos[0]
+            self.planet.position = [x, y, 0, d]
         else:
             # NUTS
             for theta in np.arange(self.planet.position[-2] + stepsize, self.planet.position[-2] + 359, stepsize):
                 theta = theta % 360
-                print("THETA", theta)
                 d = (self.a * (1 - self.e**2))/(1 + self.e * math.cos(theta))
                 # converting to Cartesian
                 y = math.sin(theta) * d + self.pos[1]
                 x = math.cos(theta) * d + self.pos[0]
-                print("X {}, Y {}".format(x, y))
-                triangle = Triangle([self.pos, self.planet.position, [x, y]])
-                print("AREA", triangle.getArea())
-                if triangle.getArea() >= 1000:
-                    triangle.draw()
-                    for p in triangle.points:
-                        pixels[int(p[0])][int(p[1])] = 2
+                triangle = Triangle([self.pos, self.planet.position, [x, y]], self.debug)
+                if self.debug:
+                    print("MOTION T {}, X {}, Y {}, D {}, A {}, POS {}".format(theta, x, y, d, triangle.getArea(), self.planet.position))
+                if triangle.getArea() >= self.planet.v:
+                    if self.visual:
+                        triangle.draw()
+                        for p in triangle.points:
+                            pixels[int(p[0])][int(p[1])] = 2
                     self.planet.position = [x, y, theta, d]
+                    self.planet.draw()
                     return
-                # self.planet.position = [x, y, theta, d]
 
-        print("PLANET POS", self.planet.position)
 
 
 
