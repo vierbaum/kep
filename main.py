@@ -3,6 +3,7 @@
 from enum import Enum
 from line import Line
 from triangle import Triangle
+from orbit import Orbit
 from vars import *
 import pygame
 import sys
@@ -24,22 +25,6 @@ def drawGrid(SCREEN):
                 color = pygame.Color(Colors.green)
                 pygame.draw.rect(SCREEN, color, rect)
 
-
-# positive e, pos on right, if negative e, pos on left
-def orbit(pos, a, e):
-    points = []
-    points_angles = []
-    # looping through all angles
-    for theta in np.arange(0, 360, 0.001):
-        # polar coordinate from pos (https://en.wikipedia.org/wiki/Kepler_orbit#Development_of_the_laws)
-        d = (a * (1 - e**2))/(1 + e * math.cos(theta))
-        # converting to Cartesian
-        y = math.sin(theta) * d + pos[1]
-        x = math.cos(theta) * d + pos[0]
-        if [int(x), int(y)] not in points:
-            points.append([int(x), int(y)])
-        points_angles.append([int(x), int(y), x, y, theta, d])
-    return points_angles
 
 def sphere(pos, rad):
     # looping through region of circle
@@ -65,7 +50,7 @@ def areaEl(theta0, theta1, points, orig):
     tri.draw()
     for p in tri.points:
         pixels[int(p[0])][int(p[1])] = 2
-    print(tri.getArea())
+    print("AREA", tri.getArea())
 
 def motion():
     # TODO shit-ton of logic
@@ -73,15 +58,22 @@ def motion():
 
 
 if __name__ == "__main__":
-    pix_orb0 = orbit([500, 600], 200, -0.75)
-    for p in pix_orb0:
+    pix_orb0 = Orbit([500, 600], 200, -0.75)
+    pix_orb0.draw()
+    for p in pix_orb0.points:
         pixels[p[0]][p[1]] = 1
     sphere([500, 600], 5)
-    areaEl(5, 10, pix_orb0, [500, 600])
+    #areaEl(5, 10, pix_orb0.points_angles, [500, 600])
+    pix_orb0.motion()
+
+
+
     pygame.init()
     SCREEN = pygame.display.set_mode((window_res[0], window_res[1]))
     SCREEN.fill(Colors.BG)
     while True:
+
+        pix_orb0.motion()
         click = pygame.mouse.get_pressed()[0]
         if click:
             xm,ym = pygame.mouse.get_pos()
