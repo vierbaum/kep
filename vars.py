@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from PIL import ImageColor, Image
 
 class Colors ():
     BG = "#1B1D1E"
@@ -25,5 +26,5 @@ class Colors ():
 
 
 window_res = [1366, 768]
-
 pixels = [[0 for _ in range(window_res[1])] for _ in range(window_res[0])]
+
